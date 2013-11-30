@@ -542,24 +542,7 @@ function ditchProduct()
   turtle.turnRight()
 end
  
-function scanBees()
-  log("scanning bees")
-  turtle.turnLeft()
-  turtle.turnLeft()
-  for i = 1, 16 do
-    if turtle.getItemCount(i) > 0 then
-      log(".")
-      turtle.select(i)
-      turtle.drop()
-      while not turtle.suck() do
-        sleep(1)
-      end
-    end
-  end
-  logLine()
-  turtle.turnRight()
-  turtle.turnRight()
-end
+
 
 function swapBee(slot1, slot2, freeSlot)
   turtle.select(slot1)
@@ -578,21 +561,25 @@ function analyzeBees()
   local droneData = {}
   turtle.turnLeft()
   local beealyzer = peripheral.wrap("front")
+
+  log("scanning bees")
   for i = 1, 16 do
     if turtle.getItemCount(i) > 0 then
+      log(".")
       turtle.select(i)
-
       turtle.drop()
 
-      local tableData = beealyzer.getStackInSlot(9)
+      while not turtle.suck() do
+        sleep(1)
+      end
 
-      turtle.suck()
-
-      local beeData
+      turtle.drop() -- Put it back in analyzer so it lands in slot 9 so our analyzer can read it
 
       -- #################################
       -- Convert to miscPeripherals format
       -- #################################
+      local tableData = beealyzer.getStackInSlot(9)
+      local beeData
 
       -- BeeInfo values
       for key, value in pairs (tableData.beeInfo) do
