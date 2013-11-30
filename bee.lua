@@ -1,4 +1,4 @@
--- BeeAnalyzer 4.3
+-- BeeAnalyzer 4.4
 -- Original code by Direwolf20
 -- Hotfix 1 by Mandydax
 -- Hotfix 2 by Mikeyhun/MaaadMike
@@ -16,6 +16,7 @@
 --     Added logging
 --     Changed scoring to look for best combination of princess and drone
 -- 4.3 Updated targeting
+-- 4.4 Switched to OpenPeripherals by Eiktyrner
 
 -- attribute scoring for same species tie-breaking -----------------------------
 
@@ -580,9 +581,67 @@ function analyzeBees()
   for i = 1, 16 do
     if turtle.getItemCount(i) > 0 then
       turtle.select(i)
+
       turtle.drop()
-      local beeData = beealyzer.analyze()        
+
+      local tableData = beealyzer.getStackInSlot(9)
+
       turtle.suck()
+
+      local beeData
+
+      -- #################################
+      -- Convert to miscPeripherals format
+      -- #################################
+
+      -- BeeInfo values
+      for key, value in pairs (tableData.beeInfo) do
+        if (key == "generation" and value ~= -1) then
+          beeData["type"] = "princess"
+        else
+          beeData["type"] = "drone"
+        end
+      end
+
+      -- Active values
+      for key, value in pairs (tableData.beeInfo.active) do
+        if (key == "species") then
+          beeData["speciesPrimary"] = value
+        end
+        if (key == "fertility") then
+          beeData["fertility"] = value
+        end
+        if (key == "speed") then
+          beeData["speed"] = value
+        end
+        if (key == "nocturnal") then
+          beeData["nocturnal"] = value
+        end
+        if (key == "tolerantFlyer") then
+          beeData["tolerantFlyer"] = value
+        end        
+        if (key == "caveDwelling") then
+          beeData["caveDwelling"] = value
+        end        
+        if (key == "temperatureTolerance") then
+          beeData["toleranceTemperature"] = value
+        end        
+        if (key == "humidityTolerance") then
+          beeData["toleranceHumidity"] = value
+        end        
+      end
+
+      -- Inactive values
+      for key, value in pairs (tableData.beeInfo.inactive) do
+        if (key == "species") then
+          beeData["speciesSecondary"] = value
+        end
+      end
+
+      -- #################################
+      -- Finished converting format      
+      -- #################################
+
       if not beeData["speciesPrimary"] then
         print("Bee "..i.." not correctly analyzed")
       else

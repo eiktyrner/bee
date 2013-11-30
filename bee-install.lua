@@ -1,4 +1,4 @@
---http://pastebin.com/2jKRTN8y
+--http://pastebin.com/WAUY6yn6
 
 if not http then
   print("No access to web")
@@ -10,7 +10,7 @@ local branch = "master"
 local files = {
   {
     name = "bee",
-    url = "https://raw.github.com/Forte40/bee/"..branch.."/bee.lua"
+    url = "https://raw.github.com/eiktyrner/bee/"..branch.."/bee.lua"
   }
 }
 
