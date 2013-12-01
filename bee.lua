@@ -550,10 +550,10 @@ function analyzeBees()
   local princessSlot
   local princessData
   local droneData = {}
-  --turtle.turnLeft()
   local beealyzer = peripheral.wrap("front")
 
-  print("scanning bees")
+  turtle.turnLeft()
+  
   for i = 1, 16 do
     if turtle.getItemCount(i) > 0 then
       print(".")
