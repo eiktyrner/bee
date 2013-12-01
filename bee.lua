@@ -551,10 +551,11 @@ function swapBee(slot1, slot2, freeSlot)
   turtle.transferTo(slot2)
 end  
 
+-- Turn left to Analyzer
 function analyzeBees()
   print("analyzing bees...")
   turtle.turnLeft()
-  
+
   local freeSlot
   local princessSlot
   local princessData
@@ -566,6 +567,8 @@ function analyzeBees()
       print(".")
       turtle.select(i)
       turtle.drop()
+
+      sleep(1) -- To make sure the drone goes through the analyzer
 
       local tableData = beealyzer.getStackInSlot(9)
       local beeData = {}
