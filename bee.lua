@@ -551,17 +551,16 @@ function swapBee(slot1, slot2, freeSlot)
   turtle.transferTo(slot2)
 end  
 
--- Turn left to Analyzer
 function analyzeBees()
   print("analyzing bees...")
+  turtle.turnLeft()
+  
   local freeSlot
   local princessSlot
   local princessData
   local droneData = {}
   local beealyzer = peripheral.wrap("front")
 
-  turtle.turnLeft()
-  
   for i = 1, 16 do
     if turtle.getItemCount(i) > 0 then
       print(".")
