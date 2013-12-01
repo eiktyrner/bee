@@ -452,7 +452,6 @@ end
 
 -- Expects the turtle facing apiary
 function clearSystem()
-
   -- clear out apiary
   while turtle.suck() do end
 
@@ -528,7 +527,9 @@ function ditchProduct()
       if not turtle.drop() then
         turtle.dropDown()
       else
-        turtle.suck()
+        while not turtle.suck() do
+          sleep(1)
+        end
       end
     end
   end
@@ -561,15 +562,6 @@ function analyzeBees()
       turtle.select(i)
       turtle.drop()
 
-      while not turtle.suck() do
-        sleep(1)
-      end
-
-      turtle.drop() -- Put it back in analyzer so it lands in slot 9 so our analyzer can read it
-
-      -- #################################
-      -- Convert to miscPeripherals format
-      -- #################################
       local tableData = beealyzer.getStackInSlot(9)
       local beeData = {}
 
@@ -599,10 +591,6 @@ function analyzeBees()
           beeData["speciesSecondary"] = value
         end
       end
-
-      -- #################################
-      -- Finished converting format      
-      -- #################################
 
       if not beeData["speciesPrimary"] then
         print("Bee "..i.." not correctly analyzed")
