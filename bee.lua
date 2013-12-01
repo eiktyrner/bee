@@ -27,13 +27,13 @@ scoresFertility = {
   [4] = 0.4
 }
 scoresSpeed = {
-  ["0.3"] = 0.01,
-  ["0.6"] = 0.02,
-  ["0.8"] = 0.03,
-  ["1"]   = 0.04,
-  ["1.2"] = 0.05,
-  ["1.4"] = 0.06,
-  ["1.7"] = 0.07
+  ["Slowest"] = 0.01,
+  ["Slower"] = 0.02,
+  ["Slow"] = 0.03,
+  ["Normal"]   = 0.04,
+  ["Fast"] = 0.05,
+  ["Faster"] = 0.06,
+  ["Fastest"] = 0.07
 }
 scoresAttrib = {
   diurnal      =0.004,
@@ -443,6 +443,12 @@ function logLine(msg)
   io.write(msg.."\n")
 end
 
+function logTable(table)
+  for key, value in pairs (table) do
+    logLine(key .. " = " .. tostring(value))
+  end
+end
+
 -- analyzing functions ---------------------------------------------------------
 
 -- Fix for some versions returning bees.species.*
@@ -583,7 +589,11 @@ function analyzeBees()
 
       -- Active values
       for key, value in pairs (tableData.beeInfo.active) do
-        beeData[key] = value
+        if key == "species" then
+          beeData["speciesPrimary"] = value
+        else
+          beeData[key] = value
+        end
       end
       
       -- Inactive values
@@ -592,6 +602,8 @@ function analyzeBees()
           beeData["speciesSecondary"] = value
         end
       end
+
+      logTable(beeData)
 
       if not beeData["speciesPrimary"] then
         print("Bee "..i.." not correctly analyzed")
@@ -681,7 +693,7 @@ function scoreBee(princessData, droneData)
   score = maxScore
   -- score attributes
   score = score + max(scoresFertility[droneData["fertility"]], scoresFertility[princessData["fertility"]])
-  score = score + math.min(scoresSpeed[tostring(droneData["speed"])], scoresSpeed[tostring(princessData["speed"])])
+  score = score + math.min(scoresSpeed[droneData["speed"]], scoresSpeed[princessData["speed"]])
   if droneData["diurnal"] or princessData["diurnal"] then score = score + scoresAttrib["diurnal"] end
   if droneData["nocturnal"] or princessData["nocturnal"] then score = score + scoresAttrib["nocturnal"] end
   if droneData["tolerantFlyer"] or princessData["tolerantFlyer"] then score = score + scoresAttrib["tolerantFlyer"] end
@@ -709,6 +721,20 @@ toleranceString = {
   ["BOTH_2"] = "+-2 ",
   ["BOTH_3"] = "+-3 "
 }
+
+speedString = {
+  ["Slowest"] = "0.3",
+  ["Slower"] = "0.6"
+  ["Slow"] = "0.8",
+  ["Normal"] = "1.0",
+  ["Fast"] = "1.2",
+  ["Faster"] = "1.4",
+  ["Fastest"] = "1.7"
+}
+
+
+
+
 function printBee(beeData)
   log(beeData["slot"] < 10 and beeData["slot"].." " or beeData["slot"])
   if (beeData["type"] == "princess") then
@@ -718,7 +744,7 @@ function printBee(beeData)
   end
   log(beeData["speciesPrimary"]:gsub("bees%.species%.",""):sub(1,3)..":"..beeData["speciesSecondary"]:gsub("bees%.species%.",""):sub(1,3).." ")
   log(tostring(beeData["fertility"]).." ")
-  log(beeData["speed"] == 1 and "1.0 " or tostring(beeData["speed"]).." ")
+  log(speedString[beeData["speed"]].." ")
   if beeData["diurnal"] then
     log("d ")
   else
