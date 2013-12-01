@@ -584,7 +584,8 @@ function analyzeBees()
       -- Active values
       for key, value in pairs (tableData.beeInfo.active) do
         beeData[key] = value
-
+      end
+      
       -- Inactive values
       for key, value in pairs (tableData.beeInfo.inactive) do
         if key == "species" then
