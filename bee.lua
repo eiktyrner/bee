@@ -450,23 +450,14 @@ function fixName(name)
   return name:gsub("bees%.species%.",""):gsub("^.", string.upper)
 end
 
+-- Expects the turtle facing apiary
 function clearSystem()
-  -- orient turtle
-  while true do
-    local p = peripheral.wrap("front")
-    if p and p.isMember then
-      break
-    end
-    turtle.turnRight()
-  end
+
+  -- clear out apiary
+  while turtle.suck() do end
+
   -- clear out analyzer
   turtle.turnLeft()
-  while turtle.suck() do end
-  -- clear out beealyzer
-  turtle.turnRight()
-  turtle.suck()
-  -- clear out apiary
-  turtle.turnRight()
   while turtle.suck() do end
 end
  
@@ -523,6 +514,9 @@ function breedBees(princessSlot, droneSlot)
    turtle.drop()
 end
  
+-- Turns to Analyzer and tries to drop item. 
+-- If it's not accepted (not a bee)
+-- drop to chest.
 function ditchProduct()  
   print("ditching product...")
   turtle.turnLeft()
@@ -530,9 +524,7 @@ function ditchProduct()
   for i = 1, 16 do
     if turtle.getItemCount(i) > 0 then
       turtle.select(i)
-      turtle.drop()
-      if not m.isMember() then
-        turtle.suck()
+      if not turtle.drop() then
         turtle.dropDown()
       else
         turtle.suck()
@@ -541,8 +533,6 @@ function ditchProduct()
   end
   turtle.turnRight()
 end
- 
-
 
 function swapBee(slot1, slot2, freeSlot)
   turtle.select(slot1)
@@ -553,19 +543,20 @@ function swapBee(slot1, slot2, freeSlot)
   turtle.transferTo(slot2)
 end  
 
+-- Turn left to Analyzer
 function analyzeBees()
-  logLine("analyzing bees...")
+  print("analyzing bees...")
   local freeSlot
   local princessSlot
   local princessData
   local droneData = {}
-  turtle.turnLeft()
+  --turtle.turnLeft()
   local beealyzer = peripheral.wrap("front")
 
-  log("scanning bees")
+  print("scanning bees")
   for i = 1, 16 do
     if turtle.getItemCount(i) > 0 then
-      log(".")
+      print(".")
       turtle.select(i)
       turtle.drop()
 
@@ -579,48 +570,50 @@ function analyzeBees()
       -- Convert to miscPeripherals format
       -- #################################
       local tableData = beealyzer.getStackInSlot(9)
-      local beeData
+      local beeData = {}
 
-      -- BeeInfo values
-      for key, value in pairs (tableData.beeInfo) do
-        if (key == "generation" and value ~= -1) then
-          beeData["type"] = "princess"
-        else
-          beeData["type"] = "drone"
+      -- Check if it's a drone or princess
+      for key, value in pairs (tableData) do
+        if key == "rawName" then
+          if string.find(value, "princess") then
+            beeData["type"] = "princess"
+          else
+            beeData["type"] = "drone"
+          end
         end
       end
 
       -- Active values
       for key, value in pairs (tableData.beeInfo.active) do
-        if (key == "species") then
+        if key == "species" then
           beeData["speciesPrimary"] = value
         end
-        if (key == "fertility") then
+        if key == "fertility" then
           beeData["fertility"] = value
         end
-        if (key == "speed") then
+        if key == "speed" then
           beeData["speed"] = value
         end
-        if (key == "nocturnal") then
+        if key == "nocturnal" then
           beeData["nocturnal"] = value
         end
-        if (key == "tolerantFlyer") then
+        if key == "tolerantFlyer" then
           beeData["tolerantFlyer"] = value
         end        
-        if (key == "caveDwelling") then
+        if key == "caveDwelling" then
           beeData["caveDwelling"] = value
         end        
-        if (key == "temperatureTolerance") then
+        if key == "temperatureTolerance" then
           beeData["toleranceTemperature"] = value
         end        
-        if (key == "humidityTolerance") then
+        if key == "humidityTolerance" then
           beeData["toleranceHumidity"] = value
         end        
       end
 
       -- Inactive values
       for key, value in pairs (tableData.beeInfo.inactive) do
-        if (key == "species") then
+        if key == "species" then
           beeData["speciesSecondary"] = value
         end
       end
@@ -645,6 +638,7 @@ function analyzeBees()
       freeSlot = i
     end
   end
+
   if princessData then
     if princessSlot ~= 1 then
       swapBee(1, princessSlot, freeSlot)
