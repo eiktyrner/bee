@@ -874,7 +874,6 @@ clearSystem()
 while true do
   ditchProduct()
   countBees()
-  scanBees()
   princessData, droneData = analyzeBees()
   if princessData then
     if isPurebred(princessData, droneData[2]) then
