@@ -603,8 +603,6 @@ function analyzeBees()
         end
       end
 
-      logTable(beeData)
-
       if not beeData["speciesPrimary"] then
         print("Bee "..i.." not correctly analyzed")
       else
@@ -731,9 +729,6 @@ speedString = {
   ["Faster"] = "1.4",
   ["Fastest"] = "1.7"
 }
-
-
-
 
 function printBee(beeData)
   log(beeData["slot"] < 10 and beeData["slot"].." " or beeData["slot"])
