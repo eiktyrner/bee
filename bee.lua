@@ -573,6 +573,11 @@ function analyzeBees()
       local tableData = beealyzer.getStackInSlot(9)
       local beeData = {}
 
+      -- Get bees back into turtle after grabbing values
+      while not turtle.suck() do
+        sleep(1)
+      end
+
       -- Check if it's a drone or princess
       for key, value in pairs (tableData) do
         if key == "rawName" then
@@ -586,31 +591,7 @@ function analyzeBees()
 
       -- Active values
       for key, value in pairs (tableData.beeInfo.active) do
-        if key == "species" then
-          beeData["speciesPrimary"] = value
-        end
-        if key == "fertility" then
-          beeData["fertility"] = value
-        end
-        if key == "speed" then
-          beeData["speed"] = value
-        end
-        if key == "nocturnal" then
-          beeData["nocturnal"] = value
-        end
-        if key == "tolerantFlyer" then
-          beeData["tolerantFlyer"] = value
-        end        
-        if key == "caveDwelling" then
-          beeData["caveDwelling"] = value
-        end        
-        if key == "temperatureTolerance" then
-          beeData["toleranceTemperature"] = value
-        end        
-        if key == "humidityTolerance" then
-          beeData["toleranceHumidity"] = value
-        end        
-      end
+        beeData[key] = value
 
       -- Inactive values
       for key, value in pairs (tableData.beeInfo.inactive) do
@@ -716,8 +697,8 @@ function scoreBee(princessData, droneData)
   if droneData["nocturnal"] or princessData["nocturnal"] then score = score + scoresAttrib["nocturnal"] end
   if droneData["tolerantFlyer"] or princessData["tolerantFlyer"] then score = score + scoresAttrib["tolerantFlyer"] end
   if droneData["caveDwelling"] or princessData["caveDwelling"] then score = score + scoresAttrib["caveDwelling"] end
-  score = score + max(scoresTolerance[droneData["toleranceTemperature"]], scoresTolerance[princessData["toleranceTemperature"]])
-  score = score + max(scoresTolerance[droneData["toleranceHumidity"]], scoresTolerance[princessData["toleranceHumidity"]])
+  score = score + max(scoresTolerance[droneData["temperatureTolerance"]], scoresTolerance[princessData["temperatureTolerance"]])
+  score = score + max(scoresTolerance[droneData["humidityTolerance"]], scoresTolerance[princessData["humidityTolerance"]])
   return score
 end
 
@@ -769,8 +750,8 @@ function printBee(beeData)
   else
     log("  ")
   end
-  log(toleranceString[beeData["toleranceTemperature"]])
-  log(toleranceString[beeData["toleranceHumidity"]])
+  log(toleranceString[beeData["temperatureTolerance"]])
+  log(toleranceString[beeData["humidityTolerance"]])
   if beeData.score then
     logLine(string.format("%5.1d", beeData.score).." ")
   else
