@@ -459,6 +459,7 @@ function clearSystem()
   -- clear out analyzer
   turtle.turnLeft()
   while turtle.suck() do end
+  turtle.turnRight()
 end
  
 function getBees()
