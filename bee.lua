@@ -724,7 +724,7 @@ toleranceString = {
 
 speedString = {
   ["Slowest"] = "0.3",
-  ["Slower"] = "0.6"
+  ["Slower"] = "0.6",
   ["Slow"] = "0.8",
   ["Normal"] = "1.0",
   ["Fast"] = "1.2",
