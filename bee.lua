@@ -1,4 +1,4 @@
--- BeeAnalyzer 4.4
+-- BeeAnalyzer 4.4.1
 -- Original code by Direwolf20
 -- Hotfix 1 by Mandydax
 -- Hotfix 2 by Mikeyhun/MaaadMike
@@ -17,6 +17,9 @@
 --     Changed scoring to look for best combination of princess and drone
 -- 4.3 Updated targeting
 -- 4.4 Switched to OpenPeripherals by Eiktyrner
+-- 4.4.1  Modified to work with:
+--			OpenPeripheral Core 0.3.0-s39
+--			OpenPeripheral Addons 0.1.0-s41
 
 -- attribute scoring for same species tie-breaking -----------------------------
 
@@ -27,37 +30,37 @@ scoresFertility = {
   [4] = 0.4
 }
 scoresSpeed = {
-  ["Slowest"] = 0.01,
-  ["Slower"] = 0.02,
-  ["Slow"] = 0.03,
-  ["Normal"]   = 0.04,
-  ["Fast"] = 0.05,
-  ["Faster"] = 0.06,
-  ["Fastest"] = 0.07
+  ["0.3"] = 0.01, -- Slowest
+  ["0.6"] = 0.02, -- Slower
+  ["0.8"] = 0.03, -- Slow
+  ["1"]   = 0.04, -- Normal
+  ["1.2"] = 0.05, -- Fast
+  ["1.4"] = 0.06, -- Faster
+  ["1.7"] = 0.07  -- Fastest
 }
 scoresAttrib = {
-  diurnal      =0.004,
-  nocturnal    =0.002,
-  tolerantFlyer=0.001,
-  caveDwelling =0.0001
+  diurnal       = 0.004,
+  nocturnal     = 0.003,
+  tolerantFlyer = 0.002,
+  caveDwelling  = 0.0001
 }
 scoresTolerance = {
   ["NONE"]   = 0.00000,
-  ["UP_1"]   = 0.00001,
-  ["UP_2"]   = 0.00002,
-  ["UP_3"]   = 0.00003,
-  ["UP_4"]   = 0.00004,
-  ["UP_5"]   = 0.00005,
-  ["DOWN_1"] = 0.00001,
-  ["DOWN_2"] = 0.00002,
-  ["DOWN_3"] = 0.00003,
-  ["DOWN_4"] = 0.00004,
-  ["DOWN_5"] = 0.00005,
-  ["BOTH_1"] = 0.00002,
-  ["BOTH_2"] = 0.00004,
-  ["BOTH_3"] = 0.00006,
-  ["BOTH_4"] = 0.00008,
-  ["BOTH_5"] = 0.00010
+  ["UP 1"]   = 0.00001,
+  ["UP 2"]   = 0.00002,
+  ["UP 3"]   = 0.00003,
+  ["UP 4"]   = 0.00004,
+  ["UP 5"]   = 0.00005,
+  ["DOWN 1"] = 0.00001,
+  ["DOWN 2"] = 0.00002,
+  ["DOWN 3"] = 0.00003,
+  ["DOWN 4"] = 0.00004,
+  ["DOWN 5"] = 0.00005,
+  ["BOTH 1"] = 0.00002,
+  ["BOTH 2"] = 0.00004,
+  ["BOTH 3"] = 0.00006,
+  ["BOTH 4"] = 0.00008,
+  ["BOTH 5"] = 0.00010
 }
 
 -- the bee graph ---------------------------------------------------------------
@@ -699,13 +702,13 @@ function scoreBee(princessData, droneData)
   score = maxScore
   -- score attributes
   score = score + max(scoresFertility[droneData["fertility"]], scoresFertility[princessData["fertility"]])
-  score = score + math.min(scoresSpeed[droneData["speed"]], scoresSpeed[princessData["speed"]])
-  if droneData["diurnal"] or princessData["diurnal"] then score = score + scoresAttrib["diurnal"] end
-  if droneData["nocturnal"] or princessData["nocturnal"] then score = score + scoresAttrib["nocturnal"] end
-  if droneData["tolerantFlyer"] or princessData["tolerantFlyer"] then score = score + scoresAttrib["tolerantFlyer"] end
-  if droneData["caveDwelling"] or princessData["caveDwelling"] then score = score + scoresAttrib["caveDwelling"] end
-  score = score + max(scoresTolerance[droneData["temperatureTolerance"]], scoresTolerance[princessData["temperatureTolerance"]])
-  score = score + max(scoresTolerance[droneData["humidityTolerance"]], scoresTolerance[princessData["humidityTolerance"]])
+  score = score + math.min(scoresSpeed[tostring(droneData["speed"])], scoresSpeed[tostring(princessData["speed"])])
+  if droneData["diurnal"] == "true" or princessData["diurnal"] == "true" then score = score + scoresAttrib["diurnal"] end
+  if droneData["nocturnal"] == "true" or princessData["nocturnal"] == "true" then score = score + scoresAttrib["nocturnal"] end
+  if droneData["tolerantFlyer"] == "true" or princessData["tolerantFlyer"] == "true" then score = score + scoresAttrib["tolerantFlyer"] end
+  if droneData["caveDwelling"] == "true" or princessData["caveDwelling"] == "true" then score = score + scoresAttrib["caveDwelling"] end
+  score = score + max(scoresTolerance[string.upper(droneData["temperatureTolerance"])], scoresTolerance[string.upper(princessData["temperatureTolerance"])])
+  score = score + max(scoresTolerance[string.upper(droneData["humidityTolerance"])], scoresTolerance[string.upper(princessData["humidityTolerance"])])
   return score
 end
 
@@ -717,25 +720,25 @@ end
 
 toleranceString = {
   ["NONE"] = "    ",
-  ["UP_1"] = " +1 ",
-  ["UP_2"] = " +2 ",
-  ["UP_3"] = " +3 ",
-  ["DOWN_1"] = " -1 ",
-  ["DOWN_2"] = " -2 ",
-  ["DOWN_3"] = " -3 ",
-  ["BOTH_1"] = "+-1 ",
-  ["BOTH_2"] = "+-2 ",
-  ["BOTH_3"] = "+-3 "
+  ["UP 1"] = " +1 ",
+  ["UP 2"] = " +2 ",
+  ["UP 3"] = " +3 ",
+  ["DOWN 1"] = " -1 ",
+  ["DOWN 2"] = " -2 ",
+  ["DOWN 3"] = " -3 ",
+  ["BOTH 1"] = "+-1 ",
+  ["BOTH 2"] = "+-2 ",
+  ["BOTH 3"] = "+-3 "
 }
 
 speedString = {
-  ["Slowest"] = "0.3",
-  ["Slower"] = "0.6",
-  ["Slow"] = "0.8",
-  ["Normal"] = "1.0",
-  ["Fast"] = "1.2",
-  ["Faster"] = "1.4",
-  ["Fastest"] = "1.7"
+  ["0.3"] = "0.3", -- Slowest
+  ["0.6"] = "0.6", -- Slower
+  ["0.8"] = "0.8", -- Slow
+  ["1"]   = "1.0", -- Normal
+  ["1.2"] = "1.2", -- Fast
+  ["1.4"] = "1.4", -- Faster
+  ["1.7"] = "1.7"  -- Fastest
 }
 
 function printBee(beeData)
@@ -747,29 +750,29 @@ function printBee(beeData)
   end
   log(beeData["speciesPrimary"]:gsub("bees%.species%.",""):sub(1,3)..":"..beeData["speciesSecondary"]:gsub("bees%.species%.",""):sub(1,3).." ")
   log(tostring(beeData["fertility"]).." ")
-  log(speedString[beeData["speed"]].." ")
-  if beeData["diurnal"] then
+  log(speedString[tostring(beeData["speed"])].." ")
+  if beeData["diurnal"] == "true" then
     log("d ")
   else
     log("  ")
   end
-  if beeData["nocturnal"] then
+  if beeData["nocturnal"] == "true" then
     log("n ")
   else
     log("  ")
   end
-  if beeData["tolerantFlyer"] then
+  if beeData["tolerantFlyer"] == "true" then
     log("f ")
   else
     log("  ")
   end
-  if beeData["caveDwelling"] then
+  if beeData["caveDwelling"] == "true" then
     log("c ")
   else
     log("  ")
   end
-  log(toleranceString[beeData["temperatureTolerance"]])
-  log(toleranceString[beeData["humidityTolerance"]])
+  log(toleranceString[string.upper(beeData["temperatureTolerance"])])
+  log(toleranceString[string.upper(beeData["humidityTolerance"])])
   if beeData.score then
     logLine(string.format("%5.1d", beeData.score).." ")
   else
