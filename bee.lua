@@ -533,7 +533,7 @@ end
 -- If it's not accepted (not a bee)
 -- drop to chest.
 function ditchProduct()  
-  print("ditching product...")
+  logLine("ditching product...")
   turtle.turnLeft()
   m = peripheral.wrap("front")
   for i = 1, 16 do
@@ -548,6 +548,7 @@ function ditchProduct()
       end
     end
   end
+  logLine()
   turtle.turnRight()
 end
 
@@ -562,18 +563,18 @@ end
 
 -- Turn left to Analyzer
 function analyzeBees()
-  print("analyzing bees...")
+  logLine("analyzing bees...")
   turtle.turnLeft()
 
   local freeSlot
   local princessSlot
+  local highestScore
   local princessData
   local droneData = {}
   local beealyzer = peripheral.wrap("front")
 
   for i = 1, 16 do
     if turtle.getItemCount(i) > 0 then
-      print(".")
       turtle.select(i)
       turtle.drop()
 
@@ -615,7 +616,7 @@ function analyzeBees()
       end
 
       if not beeData["speciesPrimary"] then
-        print("Bee "..i.." not correctly analyzed")
+        logLine("Bee "..i.." not correctly analyzed")
       else
         beeData["speciesPrimary"] = fixName(beeData["speciesPrimary"])
         beeData["speciesSecondary"] = fixName(beeData["speciesSecondary"])
@@ -638,16 +639,26 @@ function analyzeBees()
       droneData[1] = nil
       princessSlot = 1
     end
-    -- bubble sort drones
-    print("sorting drones...")
+    -- selection sort drones
+    logLine("sorting drones...")
     for i = 2, 16 do
+      highestScore = i
       if turtle.getItemCount(i) > 0 and droneData[i] then
         droneData[i].score = scoreBee(princessData, droneData[i])
-        for j = i - 1, 2, -1 do
-          if droneData[j+1].score > droneData[j].score then
-            swapBee(j+1, j, freeSlot)
-            droneData[j+1], droneData[j] = droneData[j], droneData[j+1]
+        for j = i + 1, 16 do
+          if turtle.getItemCount(j) > 0 and droneData[j] then
+            if not droneData[j].score then
+              droneData[j].score = scoreBee(princessData, droneData[j])
+            end
+            if droneData[j].score > droneData[highestScore].score then
+              highestScore = j
+            end
           end
+        end
+        -- swap bees
+        if highestScore ~= i then
+          swapBee(i, highestScore, freeSlot)
+          droneData[i], droneData[highestScore] = droneData[highestScore], droneData[i]
         end
       end
     end
@@ -781,7 +792,7 @@ function printBee(beeData)
 end
 
 function dropExcess(droneData)
-  print("dropping excess...")
+  logLine("dropping excess...")
   local count = 0
   for i = 1, 16 do
     if turtle.getItemCount(i) > 0 then
