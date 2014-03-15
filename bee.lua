@@ -725,12 +725,13 @@ end
 
 function printHeader()
   logLine()
-  logLine("typ species f spd d n f c tmp hmd score")
-  logLine("-|-|-------|-|---|-|-|-|-|---|---|-----")
+  logLine("sl t species f spd n f c tmp hmd score ")
+  logLine("--|-|-------|-|---|-|-|-|---|---|------")
 end
 
+-- string constants for console output
 toleranceString = {
-  ["NONE"] = "    ",
+  ["NONE"] = "  - ",
   ["UP 1"] = " +1 ",
   ["UP 2"] = " +2 ",
   ["UP 3"] = " +3 ",
@@ -759,42 +760,28 @@ speedString = {
 }
 
 function printBee(beeData)
-  log(beeData["slot"] < 10 and beeData["slot"].." " or beeData["slot"])
-  if (beeData["type"] == "princess") then
-    log("P ")
-  else
-    log("d ")
-  end
+  log(beeData["slot"] < 10 and " "..beeData["slot"].." " or beeData["slot"].." ")
+  -- type
+  log(beeData["type"] == "princess" and "P " or "D ")
+  -- species
   log(beeData["speciesPrimary"]:gsub("bees%.species%.",""):sub(1,3)..":"..beeData["speciesSecondary"]:gsub("bees%.species%.",""):sub(1,3).." ")
+  -- fertility
   log(tostring(beeData["fertility"]).." ")
+  -- speed
   log(speedString[tostring(beeData["speed"])].." ")
-  if beeData["diurnal"] == "true" then
-    log("d ")
-  else
-    log("  ")
-  end
-  if beeData["nocturnal"] == "true" then
-    log("n ")
-  else
-    log("  ")
-  end
-  if beeData["tolerantFlyer"] == "true" then
-    log("f ")
-  else
-    log("  ")
-  end
-  if beeData["caveDwelling"] == "true" then
-    log("c ")
-  else
-    log("  ")
-  end
+  -- nocturnal
+  log(beeData["nocturnal"] and "X " or "- ")
+  -- flyer
+  log(beeData["tolerantFlyer"] and "X " or "- ")
+  -- cave dwelling
+  log(beeData["caveDwelling"] and "X " or "- ")
+  -- temperature tolerance
   log(toleranceString[string.upper(beeData["temperatureTolerance"])])
+  -- humidity tolerance
   log(toleranceString[string.upper(beeData["humidityTolerance"])])
-  if beeData.score then
-    logLine(string.format("%5.1d", beeData.score).." ")
-  else
-    logLine()
-  end
+  -- score
+  log(beeData.score and string.format("%5.1d", beeData.score).." " or "      ")
+  logLine()
 end
 
 function dropExcess(droneData)
