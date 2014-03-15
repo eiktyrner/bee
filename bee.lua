@@ -113,7 +113,7 @@ function scoreBees()
     end
   end
   while beeCount > 0 do
-    beeScore = beeScore * 4
+    beeScore = beeScore * 2
     -- find all bees where all parent combos are scored
     for name, beeData in pairs(bees) do
       if not beeData.score then
@@ -684,7 +684,6 @@ function scoreBee(princessData, droneData)
     return 0
   end
   local princessSpecies = {princessData["speciesPrimary"], princessData["speciesSecondary"]}
-  local max = math.max
   local score
   local maxScore = 0
   for _, combo in ipairs({{princessSpecies[1], droneSpecies[1]}
@@ -692,17 +691,13 @@ function scoreBee(princessData, droneData)
                          ,{princessSpecies[2], droneSpecies[1]}
                          ,{princessSpecies[2], droneSpecies[2]}}) do
     -- find maximum score for each combo
-    score = max(bees[combo[1]].score, bees[combo[2]].score)
+    score = (bees[combo[1]].score + bees[combo[2]].score) / 2
     for name, beeData in pairs(bees) do
       if beeData.targeted then
         for i, parents in ipairs(beeData.mutateFrom) do
           if combo[1] == parents[1] and combo[2] == parents[2]
               or combo[2] == parents[1] and combo[1] == parents[2] then
-            if beeData.score > score then
-              --log(" "..name:sub(1,3).."="..tostring(beeData.score))
-            end
-            -- deduct 1 to make potential scores less than base scores
-            score = max(score, beeData.score - 1)
+            score = (score + beeData.score) / 2
           end
         end
       end
@@ -712,14 +707,13 @@ function scoreBee(princessData, droneData)
   -- add one for each combination that results in the maximum score
   score = maxScore
   -- score attributes
-  score = score + max(scoresFertility[droneData["fertility"]], scoresFertility[princessData["fertility"]])
+  score = score + math.max(scoresFertility[droneData["fertility"]], scoresFertility[princessData["fertility"]])
   score = score + math.min(scoresSpeed[tostring(droneData["speed"])], scoresSpeed[tostring(princessData["speed"])])
-  if droneData["diurnal"] == "true" or princessData["diurnal"] == "true" then score = score + scoresAttrib["diurnal"] end
-  if droneData["nocturnal"] == "true" or princessData["nocturnal"] == "true" then score = score + scoresAttrib["nocturnal"] end
-  if droneData["tolerantFlyer"] == "true" or princessData["tolerantFlyer"] == "true" then score = score + scoresAttrib["tolerantFlyer"] end
-  if droneData["caveDwelling"] == "true" or princessData["caveDwelling"] == "true" then score = score + scoresAttrib["caveDwelling"] end
-  score = score + max(scoresTolerance[string.upper(droneData["temperatureTolerance"])], scoresTolerance[string.upper(princessData["temperatureTolerance"])])
-  score = score + max(scoresTolerance[string.upper(droneData["humidityTolerance"])], scoresTolerance[string.upper(princessData["humidityTolerance"])])
+  if droneData["nocturnal"] or princessData["nocturnal"] then score = score + scoresAttrib["nocturnal"] end
+  if droneData["tolerantFlyer"] or princessData["tolerantFlyer"] then score = score + scoresAttrib["tolerantFlyer"] end
+  if droneData["caveDwelling"] or princessData["caveDwelling"] then score = score + scoresAttrib["caveDwelling"] end
+  score = score + math.max(scoresTolerance[string.upper(droneData["temperatureTolerance"])], scoresTolerance[string.upper(princessData["temperatureTolerance"])])
+  score = score + math.max(scoresTolerance[string.upper(droneData["humidityTolerance"])], scoresTolerance[string.upper(princessData["humidityTolerance"])])
   return score
 end
 
