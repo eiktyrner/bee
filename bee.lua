@@ -541,8 +541,7 @@ end
 
 function analyzeBees(droneData)
   logLine("analyzing bees...")
-  -- turtle.turnLeft()
-  local turned = 0
+  turtle.turnLeft()
   local freeSlot
   local princessSlot
   local highestScore
@@ -556,10 +555,6 @@ function analyzeBees(droneData)
     if turtle.getItemCount(i) > 0 then
       turtle.select(i)
       if not droneData[i] then
-        if not turned then
-          turtle.turnLeft()
-          turned = 1
-        end
         if not turtle.drop() then
           -- Item is not a bee, get rid of it and continue
           turtle.dropDown()
@@ -709,9 +704,7 @@ function analyzeBees(droneData)
     end
   end
   logLine()
-  if turned then
-    turtle.turnRight()
-  end
+  turtle.turnRight()
   return princessData, droneData
 end
 
