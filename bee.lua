@@ -530,6 +530,11 @@ function breedBees(princessSlot, droneSlot)
 end
 
 function swapBee(slot1, slot2, freeSlot)
+  for i = 1, 16 do
+    if turtle.getItemCount(i) == 0 then
+      freeSlot = i
+    end
+  end
   turtle.select(slot1)
   turtle.transferTo(freeSlot)
   turtle.select(slot2)
@@ -648,6 +653,7 @@ function analyzeBees(droneData)
             for j = 1, slotCount do
               turtle.select(i)
               for k = 1 , 16 do
+                if turtle.getItemCount(i) == 1 then break end
                 if turtle.getItemCount(k) == 0 then
                   turtle.transferTo(k, 1)
                   droneData[k] = droneData[i]
