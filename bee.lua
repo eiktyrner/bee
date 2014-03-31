@@ -543,6 +543,16 @@ function swapBee(slot1, slot2, freeSlot)
   turtle.transferTo(slot2)
 end  
 
+function findEmptySlot()
+  local thisResult = 0
+  for i = 1, 16 do
+    if turtle.getItemCount(i) == 0 then
+      thisResult = i
+      break
+    end
+  end
+  return thisResult
+end
 
 function analyzeBees(droneData)
   logLine("analyzing bees...")
@@ -650,15 +660,12 @@ function analyzeBees(droneData)
             end
           -- Spread bees out if they are in a stack
           elseif slotCount > 1 then
-            for j = 1, slotCount do
+            while turtle.getItemCount(i) > 1 do
               turtle.select(i)
-              for k = 1 , 16 do
-                if turtle.getItemCount(i) == 1 then break end
-                if turtle.getItemCount(k) == 0 then
-                  turtle.transferTo(k, 1)
-                  droneData[k] = droneData[i]
-                end
-              end
+              local k = findEmptySlot()
+              if not k then break end
+              turtle.transferTo(k, 1)
+              droneData[k] = droneData[i]
             end
             if turtle.getItemCount(i) > 1 then
               turtle.dropDown(turtle.getItemCount(i)-1)
