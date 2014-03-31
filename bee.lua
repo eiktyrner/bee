@@ -162,6 +162,11 @@ function choose(list, list2)
   return newList
 end
 
+-- Fix for some versions returning bees.species.*
+function fixName(name)
+  return name:gsub("bees%.species%.",""):gsub("^.", string.upper)
+end
+
 -- Experimental feature that works to build the table of bee parents/children instead of hard-coding
 
 m = peripheral.wrap("front")
@@ -196,10 +201,6 @@ end
 
 -- analyzing functions ---------------------------------------------------------
 
--- Fix for some versions returning bees.species.*
-function fixName(name)
-  return name:gsub("bees%.species%.",""):gsub("^.", string.upper)
-end
 
 -- Expects the turtle facing apiary
 function clearSystem()
