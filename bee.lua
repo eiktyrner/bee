@@ -528,31 +528,13 @@ function breedBees(princessSlot, droneSlot)
    turtle.select(droneSlot)
    turtle.drop()
 end
- 
--- Turns to Analyzer and tries to drop item. 
--- If it's not accepted (not a bee)
--- drop to chest.
-function ditchProduct()  
-  logLine("ditching product...")
-  turtle.turnLeft()
-  m = peripheral.wrap("front")
-  for i = 1, 16 do
-    if turtle.getItemCount(i) > 0 then
-      turtle.select(i)
-      if not turtle.drop() then
-        turtle.dropDown()
-      else
-        while not turtle.suck() do
-          sleep(1)
-        end
-      end
-    end
-  end
-  logLine()
-  turtle.turnRight()
-end
 
 function swapBee(slot1, slot2, freeSlot)
+  for i = 1, 16 do
+    if turtle.getItemCount(i) == 0 then
+      freeSlot = i
+    end
+  end
   turtle.select(slot1)
   turtle.transferTo(freeSlot)
   turtle.select(slot2)
@@ -561,70 +543,138 @@ function swapBee(slot1, slot2, freeSlot)
   turtle.transferTo(slot2)
 end  
 
--- Turn left to Analyzer
-function analyzeBees()
+function findEmptySlot()
+  local thisResult = 0
+  for i = 1, 16 do
+    if turtle.getItemCount(i) == 0 then
+      thisResult = i
+      break
+    end
+  end
+  return thisResult
+end
+
+function analyzeBees(droneData)
   logLine("analyzing bees...")
   turtle.turnLeft()
-
   local freeSlot
   local princessSlot
   local highestScore
   local princessData
-  local droneData = {}
+  if not droneData then
+    droneData = {}
+  end
   local beealyzer = peripheral.wrap("front")
 
   for i = 1, 16 do
     if turtle.getItemCount(i) > 0 then
       turtle.select(i)
-      turtle.drop()
-
-      sleep(1) -- To make sure the drone goes through the analyzer
-
-      local tableData = beealyzer.getStackInSlot(9)
-      local beeData = {}
-
-      -- Get bees back into turtle after grabbing values
-      while not turtle.suck() do
-        sleep(1)
-      end
-
-      -- Check if it's a drone or princess
-      for key, value in pairs (tableData) do
-        if key == "rawName" then
-          if string.find(value, "princess") then
-            beeData["type"] = "princess"
+      if not droneData[i] then
+        if not turtle.drop() then
+          -- Item is not a bee, get rid of it and continue
+          turtle.dropDown()
+          print("P")
+        else
+          print("B")
+          -- Initialize tableData and then keep trying to get the bee information until it is a valid table
+          local tableData
+          while not tableData do 
+            sleep(1)
+            tableData = beealyzer.getStackInSlot(9)
+          end
+          local beeData = {}
+          
+          -- Get bees back into turtle after grabbing values
+          while not turtle.suck() do
+            sleep(1)
+          end
+          
+          -- Check if it's a drone or princess
+          for key, value in pairs (tableData) do
+            if key == "rawName" then
+              if string.find(value, "princess") then
+                beeData["type"] = "princess"
+              else
+                beeData["type"] = "drone"
+              end
+            end
+          end
+          
+          -- Active values
+          for key, value in pairs (tableData.beeInfo.active) do
+            if key == "species" then
+              beeData["speciesPrimary"] = value
+            else
+              beeData[key] = value
+            end
+          end
+          
+          -- Inactive values
+          for key, value in pairs (tableData.beeInfo.inactive) do
+            if key == "species" then
+              beeData["speciesSecondary"] = value
+            end
+          end
+          
+          if not beeData["speciesPrimary"] then
+            logLine("Bee "..i.." not correctly analyzed")
           else
-            beeData["type"] = "drone"
+            beeData["speciesPrimary"] = fixName(beeData["speciesPrimary"])
+            beeData["speciesSecondary"] = fixName(beeData["speciesSecondary"])
+            if beeData["type"] == "princess" then
+              princessData = beeData
+              if i ~= 1 then
+                swapBee(i,1,freeSlot)
+              end
+              princessSlot = 1
+            else
+              droneData[i] = beeData
+            end
           end
         end
-      end
-
-      -- Active values
-      for key, value in pairs (tableData.beeInfo.active) do
-        if key == "species" then
-          beeData["speciesPrimary"] = value
-        else
-          beeData[key] = value
-        end
+      else
+        beeData = droneData[i]
       end
       
-      -- Inactive values
-      for key, value in pairs (tableData.beeInfo.inactive) do
-        if key == "species" then
-          beeData["speciesSecondary"] = value
-        end
-      end
-
-      if not beeData["speciesPrimary"] then
-        logLine("Bee "..i.." not correctly analyzed")
-      else
-        beeData["speciesPrimary"] = fixName(beeData["speciesPrimary"])
-        beeData["speciesSecondary"] = fixName(beeData["speciesSecondary"])
-        if beeData["type"] == "princess" then
-          princessData = beeData
-          princessSlot = i
+      if beeData then
+        -- check for untargeted species
+        if droneData[i] and (not bees[droneData[i]["speciesPrimary"]].targeted
+            or not bees[droneData[i]["speciesSecondary"]].targeted) then
+          turtle.dropDown()
+          droneData[i] = nil
+          freeSlot = i
         else
-          droneData[i] = beeData
+          -- Check if there are more than 1 bee in this slot, if so, try and spread them out in empty slots
+          local slotCount = turtle.getItemCount(i)
+          if slotCount == 1 then
+            for j = 1, i-1 do
+              -- Move bees to earlier slots to remove gaps caused by produce
+              if turtle.getItemCount(j) == 0 then
+                turtle.select(i)
+                turtle.transferTo(j)
+                droneData[j] = droneData[i]
+                droneData[i] = nil
+                freeSlot = i
+                break
+              end
+            end
+          -- Spread bees out if they are in a stack
+          elseif slotCount > 1 then
+            while turtle.getItemCount(i) > 1 do
+              turtle.select(i)
+              local k = findEmptySlot()
+              if not k then break end
+              turtle.transferTo(k, 1)
+              droneData[k] = droneData[i]
+            end
+            if turtle.getItemCount(i) > 1 then
+              turtle.dropDown(turtle.getItemCount(i)-1)
+            end
+            if turtle.getItemCount(i) == 0 then
+              droneData[i] = nil
+              freeSlot = i
+            end
+          end
         end
       end
     else
@@ -633,12 +683,6 @@ function analyzeBees()
   end
 
   if princessData then
-    if princessSlot ~= 1 then
-      swapBee(1, princessSlot, freeSlot)
-      droneData[princessSlot] = droneData[1]
-      droneData[1] = nil
-      princessSlot = 1
-    end
     -- selection sort drones
     logLine("sorting drones...")
     for i = 2, 16 do
@@ -781,24 +825,18 @@ end
 function dropExcess(droneData)
   logLine("dropping excess...")
   local count = 0
-  for i = 1, 16 do
+  for i = 3, 16 do
     if turtle.getItemCount(i) > 0 then
-      -- check for untargeted species
-      if droneData[i] and (not bees[droneData[i]["speciesPrimary"]].targeted
-          or not bees[droneData[i]["speciesSecondary"]].targeted) then
-        turtle.select(i)
-        turtle.dropDown()
-      else
-        count = count + 1
-      end
       -- drop drones over 9 to clear space for newly bred bees and product
-      if count > 9 then
+      if i > 11 then
         turtle.select(i)
         turtle.dropDown()
+        droneData[i] = nil
         count = count - 1
       end
     end
-  end  
+  end 
+  return droneData
 end
 
 function isPurebred(princessData, droneData)
@@ -872,10 +910,9 @@ end
 
 logLine("Clearing system...")
 clearSystem()
+local droneData = nil
 while true do
-  ditchProduct()
-  countBees()
-  princessData, droneData = analyzeBees()
+  princessData, droneData = analyzeBees(droneData)
   if princessData then
     if isPurebred(princessData, droneData[2]) then
       logLine("Bees are purebred")
@@ -892,7 +929,9 @@ while true do
       break
     end
     breedBees(1, 2)
-    dropExcess(droneData)
+    droneData[1] = nil
+    droneData[2] = nil
+    droneData = dropExcess(droneData)
   end
   getBees()
 end
